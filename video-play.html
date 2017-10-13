@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>WEBRTC TEST</title>
+  </head>
+  <body>
+<script src="js/three.js"></script>
+
+<script>
+var container, scene, camera, renderer, controls, stats;
+
+var video, videoImage, videoImageContext, videoTexture;
+
+init();
+animate();
+
+function init(){
+  //
+  scene = new THREE.Scene();
+  var SCREEN_WIDTH = window.innerWidth;
+  var SCREEN_HEIGHT = window.innerHeight;
+  var VIEW_ANGLE = 45;
+  var ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT;
+  var NEAR = 0.1;
+  var FAR = 10000;
+
+  camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+  scene.add(camera);
+  camera.position.set(0, 150, 400);
+  camera.lookAt(scene.position);
+
+  renderer = new THREE.WebGLRenderer({antialias: true});
+  renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+  container = document.body;
+  container.appendChild(renderer.domElement);
+
+  var light = new THREE.PointLight(0xffffff);
+  light.position.set(0, 250, 0);
+  scene.add(light);
+
+  //floor?
+
+  //video
+  video = document.createElement('video');
+  video.src = "res/sintel.ogv";
+  video.load();
+  video.play();
+
+  videoImage = document.createElement('canvas');
+  videoImage.width = 480;
+  videoImage.height = 204;
+
+  videoImageContext = videoImage.getContext('2d');
+  videoImageContext.fillStyle = '#000000';
+  videoImageContext.fillRect(0,0,videoImage.width,videoImage.height);
+
+  videoTexture = new THREE.Texture(videoImage);
+  videoTexture.minFilter = THREE.LinearFilter;
+  videoTexture.magFilter = THREE.LinearFilter;
+
+  var movieMaterial = new THREE.MeshBasicMaterial({
+    map: videoTexture,
+    overdraw: true,
+    side:THREE.DoubleSide
+  });
+  var movieGeometry = new THREE.PlaneGeometry(240,100,4,4);
+  var movieScreen = new THREE.Mesh(movieGeometry, movieMaterial);
+  scene.add(movieScreen);
+
+  camera.position.set(0, 150, 300);
+  camera.lookAt(movieScreen.position);
+}
+
+function animate(){
+  //
+  requestAnimationFrame(animate);
+  render();
+  update();
+}
+
+function render(){
+  if(video.readyState === video.HAVE_ENOUGH_DATA){
+    //
+    videoImageContext.drawImage(video, 0, 0);
+    if(videoTexture)
+      videoTexture.needsUpdate = true;
+  }
+
+  renderer.render(scene, camera);
+}
+
+function update(){
+  //
+}
+
+</script>
+  </body>
+</html>
